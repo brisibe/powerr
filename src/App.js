@@ -1,24 +1,35 @@
 import logo from './logo.svg';
 import './App.css';
+import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
+import Layout from './components/layout/Layout';
+import Homepage from './pages/home/Homepage';
+import NotFound from './pages/notfound/NotFound';
+import AuthLayout from './components/layout/AuthLayout';
+import Login from './pages/auth/login/Login';
+import Register from './pages/auth/registration/Registration';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+    <Routes>
+       <Route path="/" element={<Layout />}>
+          <Route index element={<Homepage />} />
+          <Route path='/home' element={<Homepage />} />
+          {/* <Route path="about" element={<About />} /> */}
+          {/* <Route path="dashboard" element={<Dashboard />} /> */}
+
+          {/* Using path="*"" means "match anything", so this route
+                acts like a catch-all for URLs that we don't have explicit
+              routes for. */}
+          <Route path="*" element={<NotFound />} />
+        </Route>
+
+        <Route element={<AuthLayout />}>
+           <Route path='/login' element={<Login />} />
+           <Route path='/register' element={<Register />}/>
+        </Route>
+    </Routes>
+  </Router>
   );
 }
 
