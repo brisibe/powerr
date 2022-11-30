@@ -4,6 +4,8 @@ import { Input } from '../../../components/Input'
 import * as yup from 'yup'
 import {useFormik} from 'formik'
 import {useNavigate, useNavigation} from 'react-router-dom'
+import { registerApi } from '../../../api/auth'
+import { useToast } from '@chakra-ui/react'
 
 const validationSchema = yup.object({
   fname: yup.string().required("First Name is required"),
@@ -13,6 +15,7 @@ const validationSchema = yup.object({
 })
 
 const Registration = () => {
+  const toast = useToast()
   const router = useNavigate()
   const formik = useFormik({
     initialValues: {
@@ -22,13 +25,31 @@ const Registration = () => {
       password: ""
     },
     onSubmit(val, {setSubmitting}){
-      setTimeout(() => {
-        console.log(val)
-
+      registerApi({
+        FirstName: val.fname,
+    LastName: val.lname,
+    Email: val.email,
+    Password: val.password
+      }).then((res) => {
+        toast({
+          position: "top",
+          status: "success",
+          description: res.data.message,
+          duration: 8000,
+          isClosable: true
+        })
+        router('/login');
+      }).catch(err => {
+        toast({
+          position: "top",
+          status: "error",
+          description: err?.response?.data?.message,
+          duration: 8000,
+          isClosable: true
+        })
+      }).finally(() => {
         setSubmitting(false)
-        router('/login')
-
-      }, 2000);
+      })
     },
     validationSchema: validationSchema
    })

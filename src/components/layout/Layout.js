@@ -8,7 +8,7 @@ const Layout = () => {
     <div className='flex flex-col justify-between h-screen'>
       <Navbar />
 
-      <main className='flex-grow bg-yellow-500'>
+      <main className='flex-grow '>
         <Outlet />
       </main>
 
