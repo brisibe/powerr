@@ -1,7 +1,9 @@
-import { Button, Flex, FormControl, FormLabel, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Select, Text, useDisclosure, useToast } from '@chakra-ui/react'
+import { Button, Flex, FormControl, FormLabel, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Select, Switch, Text, useDisclosure, useToast } from '@chakra-ui/react'
 import React, { useContext, useState } from 'react'
+import { useRef } from 'react'
+import { useEffect } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { useGetMeterRequests } from '../api/meter'
+import { useGetMeterByUserId, useGetMeterRequests, useGetMeters } from '../api/meter'
 import { useGetUserWallet } from '../api/wallet'
 import Logo from '../assets/colored_logo.svg'
 import userContext from '../context/UserContext'
@@ -9,11 +11,15 @@ import UtilsContext from '../context/UtilsContext'
 import http from '../http'
 import { Input } from './Input'
 
-function CreateMeterModal({isOpen, onClose}) {
+function CreateMeterModal({isOpen, onClose, userId}) {
   const [disco, setDisco]=useState({
     value: ''
   });
+
+  const meters = useGetMeters()
+
   
+
   const {setUtil} = useContext(UtilsContext)
 
 
@@ -41,6 +47,8 @@ function CreateMeterModal({isOpen, onClose}) {
         title: "Success",
         description:"Meter was successfully Created"
       })
+
+      meters.refetch()
       }
     } catch (error) {
       toast({
@@ -182,12 +190,18 @@ function FundWalletModal({isOpen, close, walletId, refetch}) {
 
 const Navbar = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const toast = useToast()
 
 const router = useNavigate()
 const {userStateVal, setUserStateVal} = useContext(userContext)
-const [openMeterModal, setOpenMeterModal]  = useState(false)
+const [isToggled, setIsToggled] = useState(false);
+const {util, setUtil} = useContext(UtilsContext)
 const wallet = useGetUserWallet(userStateVal?.currentUser?.id);
 const [walletModalOpen, setWalletModalOpen] = useState(false)
+const userMeter = useGetMeterByUserId(userStateVal?.currentUser?.id)
+
+console.log(userMeter.data, 'from here')
+
 const handleLogout =()=> {
   setUserStateVal(prev => ({
      isLoggedIn: false,
@@ -198,7 +212,54 @@ const handleLogout =()=> {
   window.sessionStorage.removeItem('user');
 }
 
-console.log(wallet.data, 'wallet')
+const fetchFunction = async () => {
+    const res = await http.post('/Meter/load', {
+      meterId: userMeter.data?.data?.meters[0]?.id,
+      unit: 1
+    })
+    
+    
+    userMeter.refetch()
+
+    if(res?.data.statusCode === 201){
+      toast({
+        status: 'warning',
+        title: 'Notice',
+        description: res.data?.message,
+        duration: 6000,
+        position: 'top',
+        isClosable: true
+      })
+
+      setUtil((prev) => ({...prev, isFridgeOn: false}))
+    }
+
+
+}
+
+const loadRef = useRef()
+
+const deductMeter =()=> {
+  if(util.isFridgeOn === true){
+  fetchFunction()
+}
+}
+
+useEffect(() => {
+  
+ if(util.isFridgeOn === false){
+   clearTimeout(loadRef.current)
+ }
+}, [util.isFridgeOn])
+
+useEffect(()=> {
+  loadRef.current = setInterval(deductMeter, 4000)
+  
+  return () => clearInterval(loadRef.current)
+}, [util.isFridgeOn])
+
+
+
 
   return (
     <>
@@ -212,8 +273,10 @@ console.log(wallet.data, 'wallet')
       Add Meter
     </Text>}
     {userStateVal?.currentUser?.userType ===2 && <Text  fontWeight="bold" color="blue.500"  p='2' cursor={'pointer'} onClick={() => setWalletModalOpen(true)}>
-      Wallet Balance: NGN{wallet?.data?.balance}
+      Wallet Balance: N{wallet?.data?.balance?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
     </Text>}
+
+    {userStateVal?.currentUser?.userType ===2 && <Flex className='space-x-2' alignItems={'center'} fontSize='14px' fontWeight={'bold'}><Text >Fridge:</Text><Switch disabled={userMeter.data?.statusCode === 204 || !userMeter.data?.data?.meters?.length || userMeter.data?.data?.meters[0]?.status === 1 } isChecked={util.isFridgeOn} onChange={() => setUtil((prev)=>({...prev,isFridgeOn: !util.isFridgeOn }))} size={'md'} /></Flex>}
         <Flex className='space-x-6 items-center'>
           <Text>Hi, {userStateVal?.currentUser?.firstName}</Text>
           <button className='button_primary w-20 h-10 rounded' onClick={userStateVal.isLoggedIn ? () => handleLogout() : router('login') }>

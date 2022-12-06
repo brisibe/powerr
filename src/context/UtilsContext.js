@@ -1,6 +1,7 @@
 import { createContext, useState } from "react";
 const utils = {
     overlayLoading: false,
+    isFridgeOn: false
 
 }
 const UtilsContext = createContext({});

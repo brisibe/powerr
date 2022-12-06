@@ -1,4 +1,4 @@
-import { useToast } from '@chakra-ui/react';
+import { Input, useToast } from '@chakra-ui/react';
 import React, { useContext, useState } from 'react'
 import { useGetMeterByUserId } from '../../api/meter';
 import userContext from '../../context/UserContext';
@@ -29,16 +29,22 @@ const Meter = ({meterNumber, status, discoName, availableUnit}) => {
           toast({
             position:'top',
             status:'success',
-            description:'Recharge successful'
-            , duration: 8000
+            description:'Recharge successful',
+             duration: 8000,
+             isClosable: true,
           })
+
+          setDigits('')
+
+          userMeter.refetch()
         }
         } catch (error) {
             toast({
               position:'top',
               status:'error',
             description: error?.response?.data?.message,
-            duration:8000
+            duration:8000,
+            isClosable: true
             })
         }
     }
@@ -56,6 +62,10 @@ const Meter = ({meterNumber, status, discoName, availableUnit}) => {
 
 
 
+  }
+
+  const handleChange =(e) => {
+    setDigits(e.target.value)
   }
 
   const handlePowerOff =()=> {
@@ -83,8 +93,8 @@ const Meter = ({meterNumber, status, discoName, availableUnit}) => {
 
   return (
     
-    <div className="w-full h-full flex justify-center items-center  bg-gray-100 min-h-full select-none">
-	<div className="p-4 min-h-[70%] shadow-md shadow-gray-300 bg-black rounded w-1/2 ">
+    <div className="w-full h-full flex justify-center items-center  bg-gray-100 min-h-full select-none p-4">
+	<div className="p-4 min-h-[60%] shadow-md shadow-gray-300 bg-black rounded w-2/3 ">
 		<div className="flex justify-center space-x-2">
 			<div  className={`rounded-full ${isBooting ? "bg-orange-400" : !isBooting && isMeterOn? "bg-green-400":"bg-gray-400 " }  w-3 h-3`}> </div>
 			{
@@ -104,7 +114,10 @@ const Meter = ({meterNumber, status, discoName, availableUnit}) => {
                   }
                   </div>
               
-               <p id="result" className="digits text-black font-bold font-mono text-3xl h-1/2">{ digits}</p>
+               {/* <p id="result" className="digits text-black font-bold font-mono text-3xl h-1/2">{ 
+               digits
+               }</p> */}
+               <Input value={digits} onChange={handleChange} className='digits text-black font-bold font-mono' fontSize={"28px"} type={'number'} border={"none"} _focusVisible={{outline:0}}   _active={{outline: 0}}/>
             </>
             }
             {/* add unit sceen */}

@@ -55,7 +55,7 @@ const Homepage = () => {
       </button>
   </div>
     </div>
-    <div className='min-h-full  w-2/3 grid place-items-center '>
+    <div className=' min-h-full  w-2/3 grid place-items-center '>
       {
   (userMeter?.data?.statusCode === 200 && userMeter.data?.data?.meters?.length > 0 && userMeter.data?.data?.isApproved) ? 
   <Meter  availableUnit={userMeter.data?.data?.meters[0]?.availableUnit}  status={userMeter.data?.data?.meters[0]?.status}  discoName={userMeter.data?.data?.meters[0]?.discoName} meterNumber={userMeter.data?.data?.meters[0]?.meterNumber} /> 
@@ -88,7 +88,7 @@ const Homepage = () => {
  
   </div>
   <MeterRequestModal refresh={userMeter?.refetch} openMeterRequestModal={openMeterRequestModal} closeMeterRequestModal={()=> setOpenMeterRequestModal(false)} />
-  <PaymentTypeModal walletId={wallet?.data?.id} amount={500}  title={'wallet will be deducted the sum of NGN500'} isModalOpen={openPaymentModal} closeModal={() =>setOpenPaymentModal(false)} />
+  <PaymentTypeModal walletAmount={wallet?.data?.balance} refresh={wallet.refetch} walletId={wallet?.data?.id} amount={500}   isModalOpen={openPaymentModal} closeModal={() =>setOpenPaymentModal(false)} />
   </>
   )
 }
